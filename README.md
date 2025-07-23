@@ -118,17 +118,17 @@ This will generate `review.csv` with the following columns:
 
 Open `review.csv` in a spreadsheet program. **Delete any rows** for words you _do not_ want to censor. Save the file.
 
-#### Step 4: Run the Censoring Script (`censor_audio.py`)
+#### Step 4: Run the Editing Script (`edit_audio.py`)
 
 This script reads your approved `review.csv` and uses `ffmpeg` to create a new, silenced audio file.
 
 **Command:**
 
 ```bash
-python censor_audio.py "path/to/your/audio.mp3" "review.csv"
+python edit_audio.py "path/to/your/audio.mp3" "review.csv"
 ```
 
-This will create a new file named `audio_censored.mp3` in the same directory.
+This will create a new file named `audio_edited.mp3` in the same directory.
 
 ### Workflow 2: Finding Topics
 
@@ -171,3 +171,15 @@ This will generate `review_topics.csv` with the following columns:
 -   `topic`: The topic that was identified as the best match.
 -   `confidence`: The model's confidence in the match (e.g., 85.12%).
 -   `text_segment`: The transcribed text from that section.
+
+#### Step 3: Run the Editing Script (`edit_audio.py`)
+
+This script reads your approved `review_topics.csv` and uses `ffmpeg` to create a new, silenced audio file.
+
+**Command:**
+
+```bash
+python edit_audio.py "path/to/your/audio.mp3" "review_topics.csv"
+```
+
+This will create a new file named `audio_edited.mp3` in the same directory.
