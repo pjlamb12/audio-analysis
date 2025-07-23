@@ -1,0 +1,6 @@
+openai-whisper
+pandas
+rich
+transformers
+torch
+Jinja2
