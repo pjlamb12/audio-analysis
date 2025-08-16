@@ -5,9 +5,30 @@ import pandas as pd
 import argparse
 from pathlib import Path
 from rich.console import Console
+import string
 
 # Setup rich console for pretty printing
 console = Console()
+
+def get_unique_filepath(filepath: Path) -> Path:
+    """
+    Checks if a filepath exists. If it does, it appends a number
+    to the filename until a unique path is found.
+    """
+    if not filepath.exists():
+        return filepath
+
+    parent = filepath.parent
+    stem = filepath.stem
+    suffix = filepath.suffix
+    counter = 1
+
+    while True:
+        new_filepath = parent / f"{stem}{counter}{suffix}"
+        if not new_filepath.exists():
+            console.print(f"[bold yellow]Warning: Output file '{filepath.name}' already exists. Saving to '{new_filepath.name}' instead.[/bold yellow]")
+            return new_filepath
+        counter += 1
 
 def format_time(seconds: float) -> str:
     """Converts seconds into HH:MM:SS format."""
@@ -17,7 +38,7 @@ def format_time(seconds: float) -> str:
     secs = total_seconds % 60
     return f"{hours:02d}:{minutes:02d}:{secs:02d}"
 
-def analyze(audio_path: Path, words_path: Path, output_csv_path: Path):
+def analyze(audio_path: Path, words_path: Path, output_csv_path: Path, no_speech_thresh: float, logprob_thresh: float, temp: float):
     """
     Transcribes an audio file and finds timestamps of specified words.
 
@@ -25,15 +46,18 @@ def analyze(audio_path: Path, words_path: Path, output_csv_path: Path):
         audio_path (Path): Path to the input audio file.
         words_path (Path): Path to the text file with words to censor.
         output_csv_path (Path): Path to save the output CSV review file.
+        no_speech_thresh (float): Threshold for detecting non-speech segments.
+        logprob_thresh (float): Threshold for token log probability.
+        temp (float): Temperature for transcription randomness.
     """
-    with console.status("[bold cyan]Starting analysis...[/bold cyan]") as status:
+    with console.status("[bold cyan]Starting analysis...[/bold cyan]", spinner="dots") as status:
         # --- Load Model ---
-        status.update("[bold cyan]Loading whisper model... (This may take a moment)[/bold cyan]")
+        status.update("[bold cyan]Loading whisper model...[/bold cyan]")
         model = whisper.load_model("base")
 
         # --- Load Banned Words ---
         status.update(f"Loading words to censor from [green]{words_path}[/green]")
-        with open(words_path, "r") as f:
+        with open(words_path, "r", encoding='utf-8') as f:
             banned_words = {line.strip().lower() for line in f if line.strip()}
         
         if not banned_words:
@@ -41,12 +65,14 @@ def analyze(audio_path: Path, words_path: Path, output_csv_path: Path):
             return
         console.print(f"Found [yellow]{len(banned_words)}[/yellow] words to search for.")
 
-        # --- Transcribe Audio ---
+        # --- Transcribe Audio with Advanced Options ---
         status.update(f"Transcribing audio from [green]{audio_path}[/green]... (This can take a long time)")
         result = model.transcribe(
             str(audio_path), 
             word_timestamps=True,
-            temperature=(0.0, 0.2, 0.4, 0.6)
+            temperature=temp,
+            no_speech_threshold=no_speech_thresh,
+            logprob_threshold=logprob_thresh
         )
         console.print("[bold green]Transcription complete![/bold green]")
 
@@ -62,15 +88,14 @@ def analyze(audio_path: Path, words_path: Path, output_csv_path: Path):
             if 'word' not in word_data:
                 continue
             
-            word = word_data['word'].strip().lower()
-            if word in banned_words:
+            word_to_check = word_data['word'].strip().lower().strip(string.punctuation)
+            if word_to_check in banned_words:
                 start_seconds = word_data['start']
                 start_idx = max(0, i - 5)
                 end_idx = min(len(all_words), i + 6)
                 context_words = [w.get('word', '') for w in all_words[start_idx:end_idx]]
                 context = " ".join(context_words)
 
-                # Append all data, including the newly formatted time
                 found_words.append({
                     'start': start_seconds,
                     'hms_timestamp': format_time(start_seconds),
@@ -86,7 +111,6 @@ def analyze(audio_path: Path, words_path: Path, output_csv_path: Path):
         # --- Create and Save Review File ---
         status.update(f"Saving {len(found_words)} instances to review file...")
         df = pd.DataFrame(found_words)
-        # Reorder columns to ensure 'hms_timestamp' is in a logical place
         df = df[['start', 'hms_timestamp', 'end', 'word', 'context']]
         df.to_csv(output_csv_path, index=False)
 
@@ -96,15 +120,19 @@ def analyze(audio_path: Path, words_path: Path, output_csv_path: Path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze an audio file for specific words and generate a timestamp review file.")
-    parser.add_argument("audio_file", type=Path, help="Path to the audio file to analyze (e.g., input.mp3).")
+    parser.add_argument("audio_file", type=Path, help="Path to the audio file to analyze.")
     parser.add_argument("--words_file", type=Path, default="banned_words.txt", help="Path to the text file containing words to censor.")
     parser.add_argument("--output_csv", type=Path, default="review.csv", help="Path to save the output review CSV file.")
+    parser.add_argument("--no_speech_threshold", type=float, default=0.6, help="Threshold for VAD. Lower values are more aggressive in finding speech. (Default: 0.6)")
+    parser.add_argument("--logprob_threshold", type=float, default=-1.0, help="Log probability threshold. (Default: -1.0)")
+    parser.add_argument("--temperature", type=float, default=0.1, help="Temperature for sampling. Set to 0 for deterministic results. (Default: 0.1)")
     
     args = parser.parse_args()
+    unique_output_path = get_unique_filepath(args.output_csv)
 
     if not args.audio_file.exists():
         console.print(f"[bold red]Error: Audio file not found at '{args.audio_file}'[/bold red]")
     elif not args.words_file.exists():
         console.print(f"[bold red]Error: Words file not found at '{args.words_file}'[/bold red]")
     else:
-        analyze(args.audio_file, args.words_file, args.output_csv)
+        analyze(args.audio_file, args.words_file, unique_output_path, args.no_speech_threshold, args.logprob_threshold, args.temperature)

@@ -1,4 +1,5 @@
 banned_words.txt
 topics.txt
-review_topics.csv
-review.csv
+review*.csv
+transcription_dump*.txt
+debug_frame*.jpg
