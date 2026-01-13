@@ -81,26 +81,57 @@ def analyze(audio_path: Path, words_path: Path, output_csv_path: Path, no_speech
             return
         console.print(f"Found [yellow]{len(banned_words)}[/yellow] words to search for.")
 
-    # --- Transcribe Audio with Advanced Options ---
-    console.print(f"Transcribing audio from [green]{audio_path}[/green]... (Live Output)")
-    result = model.transcribe(
-        str(audio_path), 
-        word_timestamps=True,
-        temperature=temp,
-        no_speech_threshold=no_speech_thresh,
-        logprob_threshold=logprob_thresh,
-        verbose=True
-    )
+    # --- Transcribe Audio with Advanced Options (Chunked) ---
+    console.print(f"Loading audio from [green]{audio_path}[/green]...")
+    full_audio = whisper.load_audio(str(audio_path))
+    
+    # Process in 30-minute chunks to avoid OOM
+    CHUNK_DURATION = 30 * 60  # 30 minutes in seconds
+    SAMPLE_RATE = 16000
+    CHUNK_SAMPLES = CHUNK_DURATION * SAMPLE_RATE
+    
+    total_duration = len(full_audio) / SAMPLE_RATE
+    total_chunks = (len(full_audio) // CHUNK_SAMPLES) + 1
+    
+    console.print(f"Audio Duration: {format_time(total_duration)} | Splitting into [yellow]{total_chunks}[/yellow] chunks of 30 mins.")
+
+    all_words = []
+    
+    for i in range(total_chunks):
+        start_sample = i * CHUNK_SAMPLES
+        end_sample = min((i + 1) * CHUNK_SAMPLES, len(full_audio))
+        
+        chunk_data = full_audio[start_sample:end_sample]
+        chunk_offset_seconds = i * CHUNK_DURATION
+        
+        console.print(f"\n[bold cyan]Processing Chunk {i+1}/{total_chunks}[/bold cyan] (Starts at {format_time(chunk_offset_seconds)})")
+        
+        # Transcribe chunk
+        result = model.transcribe(
+            chunk_data, 
+            word_timestamps=True,
+            temperature=temp,
+            no_speech_threshold=no_speech_thresh,
+            logprob_threshold=logprob_thresh,
+            verbose=True
+        )
+        
+        # Merge results with offset
+        if result.get('segments'):
+            for segment in result['segments']:
+                for word_data in segment.get('words', []):
+                    # Adjust timestamp by the chunk's start time
+                    word_data['start'] += chunk_offset_seconds
+                    word_data['end'] += chunk_offset_seconds
+                    all_words.append(word_data)
+        
     console.print("[bold green]Transcription complete![/bold green]")
 
     with console.status("[bold cyan]Processing matches...[/bold cyan]", spinner="dots") as status:
         # --- Find Matches ---
         status.update("Searching for banned words in transcription...")
         found_words = []
-        all_words = []
-        if result.get('segments'):
-            for segment in result['segments']:
-                all_words.extend(segment.get('words', []))
+        # all_words is already populated from the chunking loop above
 
         for i, word_data in enumerate(all_words):
             if 'word' not in word_data:
