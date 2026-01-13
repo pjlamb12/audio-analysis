@@ -60,16 +60,18 @@ def dump_transcription(audio_path: Path, output_txt_path: Path, no_speech_thresh
         console.print(f"Using device: [bold yellow]{device}[/bold yellow]")
         model = whisper.load_model("base", device=device)
 
-        status.update(f"Transcribing audio from [green]{audio_path}[/green]... (This can take a very long time)")
-        result = model.transcribe(
-            str(audio_path),
-            word_timestamps=True,
-            temperature=temp,
-            no_speech_threshold=no_speech_thresh,
-            logprob_threshold=logprob_thresh
-        )
-        console.print("[bold green]Transcription complete![/bold green]")
+    console.print(f"Transcribing audio from [green]{audio_path}[/green]... (Live Output)")
+    result = model.transcribe(
+        str(audio_path),
+        word_timestamps=True,
+        temperature=temp,
+        no_speech_threshold=no_speech_thresh,
+        logprob_threshold=logprob_thresh,
+        verbose=True
+    )
+    console.print("[bold green]Transcription complete![/bold green]")
 
+    with console.status("[bold cyan]Saving dump file...[/bold cyan]") as status:
         status.update(f"Writing full transcription to [green]{output_txt_path}[/green]...")
         with open(output_txt_path, 'w', encoding='utf-8') as f:
             f.write(f"Full Transcription for: {audio_path.name}\n")

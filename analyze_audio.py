@@ -81,17 +81,19 @@ def analyze(audio_path: Path, words_path: Path, output_csv_path: Path, no_speech
             return
         console.print(f"Found [yellow]{len(banned_words)}[/yellow] words to search for.")
 
-        # --- Transcribe Audio with Advanced Options ---
-        status.update(f"Transcribing audio from [green]{audio_path}[/green]... (This can take a long time)")
-        result = model.transcribe(
-            str(audio_path), 
-            word_timestamps=True,
-            temperature=temp,
-            no_speech_threshold=no_speech_thresh,
-            logprob_threshold=logprob_thresh
-        )
-        console.print("[bold green]Transcription complete![/bold green]")
+    # --- Transcribe Audio with Advanced Options ---
+    console.print(f"Transcribing audio from [green]{audio_path}[/green]... (Live Output)")
+    result = model.transcribe(
+        str(audio_path), 
+        word_timestamps=True,
+        temperature=temp,
+        no_speech_threshold=no_speech_thresh,
+        logprob_threshold=logprob_thresh,
+        verbose=True
+    )
+    console.print("[bold green]Transcription complete![/bold green]")
 
+    with console.status("[bold cyan]Processing matches...[/bold cyan]", spinner="dots") as status:
         # --- Find Matches ---
         status.update("Searching for banned words in transcription...")
         found_words = []

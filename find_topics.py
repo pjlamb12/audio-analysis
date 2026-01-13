@@ -68,11 +68,12 @@ def analyze_for_topics(audio_path: Path, topics_path: Path, output_csv_path: Pat
         # Let's use the explicit device argument for pipeline which generally accepts "mps" strings in newer versions.
         classifier = pipeline("zero-shot-classification", device=device)
 
-        # --- 2. Transcribe Audio ---
-        status.update(f"Transcribing audio from [green]{audio_path}[/green]... (This can take a long time)")
-        transcription_result = whisper_model.transcribe(str(audio_path), word_timestamps=True)
-        console.print("[bold green]Transcription complete![/bold green]")
+    # --- 2. Transcribe Audio ---
+    console.print(f"Transcribing audio from [green]{audio_path}[/green]... (Live Output)")
+    transcription_result = whisper_model.transcribe(str(audio_path), word_timestamps=True, verbose=True)
+    console.print("[bold green]Transcription complete![/bold green]")
 
+    with console.status("[bold cyan]Analyzing text...[/bold cyan]", spinner="dots") as status:
         # --- 3. Chunk Transcription into Segments ---
         status.update("Chunking transcription into 90-second segments...")
         all_words = []
