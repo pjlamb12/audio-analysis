@@ -1,5 +1,17 @@
 # find_topics.py
 
+import sys
+import os
+
+# Auto-activate venv if not already active
+if sys.prefix != os.path.abspath(os.path.join(os.path.dirname(__file__), "venv")):
+    venv_python = os.path.join(os.path.dirname(__file__), "venv", "bin", "python3")
+    if os.path.exists(venv_python):
+        # Re-execute the script with the venv python
+        os.execv(venv_python, [venv_python] + sys.argv)
+    else:
+        print("Warning: 'venv' not found. Running with system python.")
+
 import whisper
 import pandas as pd
 import argparse
