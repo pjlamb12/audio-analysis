@@ -1,3 +1,4 @@
+#!/Users/pjlamb12/projects/audio-analysis/venv/bin/python3
 # analyze_audio.py
 
 import whisper

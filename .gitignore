@@ -2,4 +2,4 @@ banned_words.txt
 topics.txt
 review*.csv
 transcription_dump*.txt
-debug_frame*.jpg
+debug_frame*.jpgvenv/
