@@ -76,7 +76,7 @@ def edit_media_with_ffmpeg(media_path: Path, review_csv_path: Path, output_path:
     output_extension = output_path.suffix.lower()
     video_formats = ['.mp4', '.mkv', '.mov', '.avi', '.webm']
     
-    command = ["ffmpeg", "-y", "-i", str(media_path)]
+    command = ["ffmpeg", "-threads", "0", "-y", "-i", str(media_path)]
 
     if input_extension in video_formats:
         console.print("Detected a [yellow]video file[/yellow]. Video stream will be copied.")

@@ -54,7 +54,10 @@ def analyze(audio_path: Path, words_path: Path, output_csv_path: Path, no_speech
     with console.status("[bold cyan]Starting analysis...[/bold cyan]", spinner="dots") as status:
         # --- Load Model ---
         status.update("[bold cyan]Loading whisper model...[/bold cyan]")
-        model = whisper.load_model("base")
+        import torch
+        device = "mps" if torch.backends.mps.is_available() else "cpu"
+        console.print(f"Using device: [bold yellow]{device}[/bold yellow]")
+        model = whisper.load_model("base", device=device)
 
         # --- Load Banned Words ---
         status.update(f"Loading words to censor from [green]{words_path}[/green]")

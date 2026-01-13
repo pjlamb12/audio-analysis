@@ -43,7 +43,10 @@ def dump_transcription(audio_path: Path, output_txt_path: Path, no_speech_thresh
     """
     with console.status("[bold cyan]Starting full transcription...[/bold cyan]") as status:
         status.update("[bold cyan]Loading Whisper model...[/bold cyan]")
-        model = whisper.load_model("base")
+        import torch
+        device = "mps" if torch.backends.mps.is_available() else "cpu"
+        console.print(f"Using device: [bold yellow]{device}[/bold yellow]")
+        model = whisper.load_model("base", device=device)
 
         status.update(f"Transcribing audio from [green]{audio_path}[/green]... (This can take a very long time)")
         result = model.transcribe(

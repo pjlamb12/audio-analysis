@@ -44,10 +44,17 @@ def analyze_for_topics(audio_path: Path, topics_path: Path, output_csv_path: Pat
         console.print(f"Found [yellow]{len(topics)}[/yellow] topics to search for.")
 
         status.update("[bold cyan]Loading Whisper model...[/bold cyan]")
-        whisper_model = whisper.load_model("base")
+        import torch
+        device = "mps" if torch.backends.mps.is_available() else "cpu"
+        console.print(f"Using device: [bold yellow]{device}[/bold yellow]")
+        whisper_model = whisper.load_model("base", device=device)
 
         status.update("[bold cyan]Loading Zero-Shot Classification model... (May download on first run)[/bold cyan]")
-        classifier = pipeline("zero-shot-classification")
+        device_id = 0 if device == "mps" else -1
+        # Note: 'mps' string for device in transformers pipeline might require pytorch setup, usually integer for GPU or 'cpu'
+        # For HuggingFace pipeline, device=0 uses the first GPU. For MPS it's often supported via string or mps device object.
+        # Let's use the explicit device argument for pipeline which generally accepts "mps" strings in newer versions.
+        classifier = pipeline("zero-shot-classification", device=device)
 
         # --- 2. Transcribe Audio ---
         status.update(f"Transcribing audio from [green]{audio_path}[/green]... (This can take a long time)")
