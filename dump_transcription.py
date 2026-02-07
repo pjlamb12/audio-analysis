@@ -1,16 +1,28 @@
+#!/usr/bin/env python3
 # dump_transcription.py
 
 import sys
 import os
+import platform
 
 # Auto-activate venv if not already active
-if sys.prefix != os.path.abspath(os.path.join(os.path.dirname(__file__), "venv")):
-    venv_python = os.path.join(os.path.dirname(__file__), "venv", "bin", "python3")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+venv_dir = os.path.join(script_dir, "venv")
+
+if sys.platform == "win32":
+    venv_python = os.path.join(venv_dir, "Scripts", "python.exe")
+else:
+    venv_python = os.path.join(venv_dir, "bin", "python3")
+
+if os.path.abspath(sys.prefix) != os.path.abspath(venv_dir):
     if os.path.exists(venv_python):
-        # Re-execute the script with the venv python
-        os.execv(venv_python, [venv_python] + sys.argv)
+        try:
+            os.execv(venv_python, [venv_python] + sys.argv)
+        except OSError as e:
+            print(f"Failed to activate venv: {e}")
+            print("Running with system python.")
     else:
-        print("Warning: 'venv' not found. Running with system python.")
+        print(f"Warning: 'venv' not found at {venv_dir}. Running with system python.")
 
 import whisper
 import argparse
@@ -56,7 +68,13 @@ def dump_transcription(audio_path: Path, output_txt_path: Path, no_speech_thresh
     with console.status("[bold cyan]Starting full transcription...[/bold cyan]") as status:
         status.update("[bold cyan]Loading Whisper model...[/bold cyan]")
         import torch
-        device = "mps" if torch.backends.mps.is_available() else "cpu"
+        
+        device = "cpu"
+        if torch.cuda.is_available():
+            device = "cuda"
+        elif torch.backends.mps.is_available():
+            device = "mps"
+
         console.print(f"Using device: [bold yellow]{device}[/bold yellow]")
         model = whisper.load_model("base", device=device)
 

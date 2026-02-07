@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # parse_dump.py
 
 import argparse

@@ -1,17 +1,28 @@
-#!/Users/pjlamb12/projects/audio-analysis/venv/bin/python3
+#!/usr/bin/env python3
 # edit_audio.py
 
 import sys
 import os
+import platform
 
 # Auto-activate venv if not already active
-if sys.prefix != os.path.abspath(os.path.join(os.path.dirname(__file__), "venv")):
-    venv_python = os.path.join(os.path.dirname(__file__), "venv", "bin", "python3")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+venv_dir = os.path.join(script_dir, "venv")
+
+if sys.platform == "win32":
+    venv_python = os.path.join(venv_dir, "Scripts", "python.exe")
+else:
+    venv_python = os.path.join(venv_dir, "bin", "python3")
+
+if os.path.abspath(sys.prefix) != os.path.abspath(venv_dir):
     if os.path.exists(venv_python):
-        # Re-execute the script with the venv python
-        os.execv(venv_python, [venv_python] + sys.argv)
+        try:
+            os.execv(venv_python, [venv_python] + sys.argv)
+        except OSError as e:
+            print(f"Failed to activate venv: {e}")
+            print("Running with system python.")
     else:
-        print("Warning: 'venv' not found. Running with system python.")
+        print(f"Warning: 'venv' not found at {venv_dir}. Running with system python.")
 
 import pandas as pd
 import argparse

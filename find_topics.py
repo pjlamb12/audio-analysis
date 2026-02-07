@@ -1,16 +1,28 @@
+#!/usr/bin/env python3
 # find_topics.py
 
 import sys
 import os
+import platform
 
 # Auto-activate venv if not already active
-if sys.prefix != os.path.abspath(os.path.join(os.path.dirname(__file__), "venv")):
-    venv_python = os.path.join(os.path.dirname(__file__), "venv", "bin", "python3")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+venv_dir = os.path.join(script_dir, "venv")
+
+if sys.platform == "win32":
+    venv_python = os.path.join(venv_dir, "Scripts", "python.exe")
+else:
+    venv_python = os.path.join(venv_dir, "bin", "python3")
+
+if os.path.abspath(sys.prefix) != os.path.abspath(venv_dir):
     if os.path.exists(venv_python):
-        # Re-execute the script with the venv python
-        os.execv(venv_python, [venv_python] + sys.argv)
+        try:
+            os.execv(venv_python, [venv_python] + sys.argv)
+        except OSError as e:
+            print(f"Failed to activate venv: {e}")
+            print("Running with system python.")
     else:
-        print("Warning: 'venv' not found. Running with system python.")
+        print(f"Warning: 'venv' not found at {venv_dir}. Running with system python.")
 
 import whisper
 import pandas as pd
@@ -57,16 +69,30 @@ def analyze_for_topics(audio_path: Path, topics_path: Path, output_csv_path: Pat
 
         status.update("[bold cyan]Loading Whisper model...[/bold cyan]")
         import torch
-        device = "mps" if torch.backends.mps.is_available() else "cpu"
+        
+        device = "cpu"
+        if torch.cuda.is_available():
+            device = "cuda"
+        elif torch.backends.mps.is_available():
+            device = "mps"
+            
         console.print(f"Using device: [bold yellow]{device}[/bold yellow]")
         whisper_model = whisper.load_model("base", device=device)
 
         status.update("[bold cyan]Loading Zero-Shot Classification model... (May download on first run)[/bold cyan]")
-        device_id = 0 if device == "mps" else -1
-        # Note: 'mps' string for device in transformers pipeline might require pytorch setup, usually integer for GPU or 'cpu'
-        # For HuggingFace pipeline, device=0 uses the first GPU. For MPS it's often supported via string or mps device object.
-        # Let's use the explicit device argument for pipeline which generally accepts "mps" strings in newer versions.
-        classifier = pipeline("zero-shot-classification", device=device)
+        
+        # Transformers pipeline 'device' argument:
+        # -1 for CPU
+        # integer >= 0 for GPU ID (e.g. 0 for cuda:0)
+        # "mps" for MPS (newer versions)
+        
+        pipeline_device = -1
+        if device == "cuda":
+            pipeline_device = 0 # Default to first GPU
+        elif device == "mps":
+            pipeline_device = "mps"
+            
+        classifier = pipeline("zero-shot-classification", device=pipeline_device)
 
     # --- 2. Transcribe Audio ---
     console.print(f"Transcribing audio from [green]{audio_path}[/green]... (Live Output)")

@@ -16,9 +16,18 @@ A collection of tools to transcribe audio, find bad words or specific topics, an
 
     To create the environment and install dependencies (run once):
 
+    **macOS / Linux:**
+
     ```bash
     python3 -m venv venv
     ./venv/bin/pip install -r requirements.txt
+    ```
+
+    **Windows:**
+
+    ```bash
+    python -m venv venv
+    venv\Scripts\pip install -r requirements.txt
     ```
 
 2.  **FFmpeg**:
@@ -36,7 +45,7 @@ You can run the python scripts directly. They are configured to automatically us
 Search for specific words listed in `banned_words.txt`.
 
 ```bash
-./analyze_audio.py input_audio.mp3
+python analyze_audio.py input_audio.mp3
 ```
 
 _Output: `review.csv`_
@@ -46,7 +55,7 @@ _Output: `review.csv`_
 Search for theoretical topics found in `topics.txt`.
 
 ```bash
-./find_topics.py input_audio.mp3
+python find_topics.py input_audio.mp3
 ```
 
 _Output: `review_topics.csv`_
@@ -56,7 +65,7 @@ _Output: `review_topics.csv`_
 Silence the sections found in the review CSV.
 
 ```bash
-./edit_audio.py input_audio.mp3 review.csv
+python edit_audio.py input_audio.mp3 review.csv
 ```
 
 _Output: `input_audio_edited.mp3`_
@@ -70,7 +79,7 @@ If you are having trouble with the analysis or just want to see the full transcr
 Transcribe the entire file to a text file.
 
 ```bash
-./dump_transcription.py input_audio.mp3
+python dump_transcription.py input_audio.mp3
 ```
 
 _Output: `transcription_dump.txt`_
@@ -80,11 +89,17 @@ _Output: `transcription_dump.txt`_
 Search for banned words within the dump file (faster than re-transcribing).
 
 ```bash
-./parse_dump.py transcription_dump.txt
+python parse_dump.py transcription_dump.txt
 ```
 
 _Output: `review.csv`_
 
 ## Optimizations
 
-The scripts are optimized to use **MPS (Metal Performance Shaders)** on macOS. This means they will utilize your GPU/Neural Engine for significantly faster processing compared to CPU-only execution. FFmpeg operations are also multi-threaded.
+The scripts are optimized to use **GPU acceleration** where available:
+
+- **macOS (Apple Silicon):** Uses **MPS** (Metal Performance Shaders).
+- **Windows / Linux (NVIDIA):** Uses **CUDA** (if available).
+- **CPU Fallback:** If no GPU is found, it falls back to CPU.
+
+FFmpeg operations are also multi-threaded.
