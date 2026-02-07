@@ -7,7 +7,8 @@ import platform
 
 # Auto-activate venv if not already active
 script_dir = os.path.dirname(os.path.abspath(__file__))
-venv_dir = os.path.join(script_dir, "venv")
+# Venv is now one level up from the scripts
+venv_dir = os.path.join(script_dir, "..", "venv")
 
 if sys.platform == "win32":
     venv_python = os.path.join(venv_dir, "Scripts", "python.exe")

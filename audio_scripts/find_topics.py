@@ -7,7 +7,8 @@ import platform
 
 # Auto-activate venv if not already active
 script_dir = os.path.dirname(os.path.abspath(__file__))
-venv_dir = os.path.join(script_dir, "venv")
+# Venv is now one level up from the scripts
+venv_dir = os.path.join(script_dir, "..", "venv")
 
 if sys.platform == "win32":
     venv_python = os.path.join(venv_dir, "Scripts", "python.exe")
@@ -172,7 +173,9 @@ def analyze_for_topics(audio_path: Path, topics_path: Path, output_csv_path: Pat
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze an audio file for specific topics and find their timestamps.")
     parser.add_argument("audio_file", type=Path, help="Path to the audio file to analyze (e.g., input.mp3 or input.m4b).")
-    parser.add_argument("--topics_file", type=Path, default="topics.txt", help="Path to a text file containing topics, one per line.")
+    # Default relative to this script's location
+    default_topics_file = Path(__file__).parent / "topics.txt"
+    parser.add_argument("--topics_file", type=Path, default=default_topics_file, help="Path to a text file containing topics, one per line.")
     parser.add_argument("--output_csv", type=Path, default="review_topics.csv", help="Path to save the output topic review CSV file.")
     
     args = parser.parse_args()

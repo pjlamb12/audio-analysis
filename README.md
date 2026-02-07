@@ -42,20 +42,20 @@ You can run the python scripts directly. They are configured to automatically us
 
 ### 1. Analyze Audio (Word Search)
 
-Search for specific words listed in `banned_words.txt`.
+Search for specific words listed in `audio_scripts/banned_words.txt`.
 
 ```bash
-python analyze_audio.py input_audio.mp3
+python audio_scripts/analyze_audio.py input_audio.mp3
 ```
 
 _Output: `review.csv`_
 
 ### 2. Find Topics
 
-Search for theoretical topics found in `topics.txt`.
+Search for theoretical topics found in `audio_scripts/topics.txt`.
 
 ```bash
-python find_topics.py input_audio.mp3
+python audio_scripts/find_topics.py input_audio.mp3
 ```
 
 _Output: `review_topics.csv`_
@@ -65,7 +65,7 @@ _Output: `review_topics.csv`_
 Silence the sections found in the review CSV.
 
 ```bash
-python edit_audio.py input_audio.mp3 review.csv
+python audio_scripts/edit_audio.py input_audio.mp3 review.csv
 ```
 
 _Output: `input_audio_edited.mp3`_
@@ -79,7 +79,7 @@ If you are having trouble with the analysis or just want to see the full transcr
 Transcribe the entire file to a text file.
 
 ```bash
-python dump_transcription.py input_audio.mp3
+python audio_scripts/dump_transcription.py input_audio.mp3
 ```
 
 _Output: `transcription_dump.txt`_
@@ -89,7 +89,7 @@ _Output: `transcription_dump.txt`_
 Search for banned words within the dump file (faster than re-transcribing).
 
 ```bash
-python parse_dump.py transcription_dump.txt
+python audio_scripts/parse_dump.py transcription_dump.txt
 ```
 
 _Output: `review.csv`_

@@ -124,7 +124,9 @@ def parse_dump_file(dump_path: Path, words_path: Path, output_csv_path: Path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Parse a transcription dump file to find banned words.")
     parser.add_argument("dump_file", type=Path, help="Path to the transcription dump .txt file.")
-    parser.add_argument("--words_file", type=Path, default="banned_words.txt", help="Path to the text file containing words to censor.")
+    # Default relative to this script's location
+    default_words_file = Path(__file__).parent / "banned_words.txt"
+    parser.add_argument("--words_file", type=Path, default=default_words_file, help="Path to the text file containing words to censor.")
     parser.add_argument("--output_csv", type=Path, default="review.csv", help="Path to save the output review CSV file.")
     
     args = parser.parse_args()

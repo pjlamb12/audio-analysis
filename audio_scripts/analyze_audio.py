@@ -8,7 +8,8 @@ import platform
 # Auto-activate venv if not already active
 # Determine the likely path for the venv python executable based on OS
 script_dir = os.path.dirname(os.path.abspath(__file__))
-venv_dir = os.path.join(script_dir, "venv")
+# Venv is now one level up from the scripts
+venv_dir = os.path.join(script_dir, "..", "venv")
 
 if sys.platform == "win32":
     venv_python = os.path.join(venv_dir, "Scripts", "python.exe")
@@ -255,7 +256,9 @@ def analyze(audio_path: Path, words_path: Path, output_csv_path: Path, no_speech
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Analyze an audio file for specific words and generate a timestamp review file.")
     parser.add_argument("audio_file", type=Path, help="Path to the audio file to analyze.")
-    parser.add_argument("--words_file", type=Path, default="banned_words.txt", help="Path to the text file containing words to censor.")
+    # Default relative to this script's location
+    default_words_file = Path(__file__).parent / "banned_words.txt"
+    parser.add_argument("--words_file", type=Path, default=default_words_file, help="Path to the text file containing words to censor.")
     parser.add_argument("--output_csv", type=Path, default="review.csv", help="Path to save the output review CSV file.")
     parser.add_argument("--no_speech_threshold", type=float, default=0.6, help="Threshold for VAD. Lower values are more aggressive in finding speech. (Default: 0.6)")
     parser.add_argument("--logprob_threshold", type=float, default=-1.0, help="Log probability threshold. (Default: -1.0)")
