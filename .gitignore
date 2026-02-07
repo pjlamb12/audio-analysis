@@ -4,3 +4,4 @@ review*.csv
 transcription_dump*.txt
 debug_frame*.jpg
 venv/
+__pycache__
