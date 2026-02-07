@@ -1,3 +1,4 @@
+.pytest_cache/
 banned_words.txt
 topics.txt
 review*.csv
