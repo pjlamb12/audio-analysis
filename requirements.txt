@@ -4,3 +4,4 @@ rich
 transformers
 torch
 Jinja2
+pytest

@@ -32,8 +32,19 @@ A collection of tools to transcribe audio, find bad words or specific topics, an
 
 2.  **FFmpeg**:
     You need `ffmpeg` installed on your system for editing media.
+
     ```bash
     brew install ffmpeg
+    ```
+
+3.  **Testing**:
+    To run the unit tests:
+
+    ```bash
+    # Install test dependencies (if you haven't already updated requirements)
+    # pip install pytest
+
+    python3 -m pytest tests/
     ```
 
 ## Usage
