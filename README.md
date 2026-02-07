@@ -105,11 +105,40 @@ python audio_scripts/parse_dump.py transcription_dump.txt
 
 _Output: `review.csv`_
 
+### 6. Analyze Video (Nudity Detection)
+
+Detects nudity in a video file using NudeNet.
+
+```bash
+python audio_scripts/analyze_video.py input_video.mp4
+```
+
+_Output: `review_video.csv`_
+
+### 7. Edit Video (Blur Nudity)
+
+Blurs sections of a video based on the review CSV.
+
+```bash
+python audio_scripts/edit_video.py input_video.mp4 review_video.csv
+```
+
+_Output: `input_video_blurred.mp4`_
+
 ## Optimizations
 
 The scripts are optimized to use **GPU acceleration** where available:
 
 - **macOS (Apple Silicon):** Uses **MPS** (Metal Performance Shaders).
+
+### CUDA Support
+
+The scripts automatically detect if CUDA is available and will use it for faster processing. Ensure you have the correct PyTorch version installed for your CUDA version.
+
+### NudeNet Models
+
+When running `analyze_video.py` for the first time, it will download the necessary model files for NudeNet. This may take some time.
+
 - **Windows / Linux (NVIDIA):** Uses **CUDA** (if available).
 - **CPU Fallback:** If no GPU is found, it falls back to CPU.
 
