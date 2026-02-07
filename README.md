@@ -110,7 +110,7 @@ _Output: `review.csv`_
 Detects nudity in a video file using NudeNet.
 
 ```bash
-python audio_scripts/analyze_video.py input_video.mp4
+python video_scripts/analyze_video.py input_video.mp4
 ```
 
 _Output: `review_video.csv`_
@@ -120,7 +120,7 @@ _Output: `review_video.csv`_
 Blurs sections of a video based on the review CSV.
 
 ```bash
-python audio_scripts/edit_video.py input_video.mp4 review_video.csv
+python video_scripts/edit_video.py input_video.mp4 review_video.csv
 ```
 
 _Output: `input_video_blurred.mp4`_

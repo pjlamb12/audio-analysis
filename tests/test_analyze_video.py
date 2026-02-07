@@ -4,7 +4,7 @@ import pytest
 from pathlib import Path
 from unittest.mock import MagicMock, patch, ANY
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'audio_scripts')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'video_scripts')))
 
 from analyze_video import format_time, analyze_video
 
