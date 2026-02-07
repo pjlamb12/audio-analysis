@@ -4,10 +4,10 @@ A collection of tools to transcribe audio, find bad words or specific topics, an
 
 ## Features
 
--   **Analyze Audio**: Transcribes audio using OpenAI's Whisper and searches for specific "banned" words.
--   **Find Topics**: Uses Whisper + Zero-Shot Classification to find timestamps for specific topics.
--   **Edit Audio/Video**: Takes a CSV of timestamps (from the above tools) and silences those sections in the media file.
--   **Hardware Acceleration**: Optimized for Apple Silicon (MPS) for faster transcription and inference.
+- **Analyze Audio**: Transcribes audio using OpenAI's Whisper and searches for specific "banned" words.
+- **Find Topics**: Uses Whisper + Zero-Shot Classification to find timestamps for specific topics.
+- **Edit Audio/Video**: Takes a CSV of timestamps (from the above tools) and silences those sections in the media file.
+- **Hardware Acceleration**: Optimized for Apple Silicon (MPS) for faster transcription and inference.
 
 ## Setup
 
@@ -60,6 +60,30 @@ Silence the sections found in the review CSV.
 ```
 
 _Output: `input_audio_edited.mp3`_
+
+### 4. Debugging Tools
+
+If you are having trouble with the analysis or just want to see the full transcription with timestamps:
+
+**a. Dump Transcription**
+
+Transcribe the entire file to a text file.
+
+```bash
+./dump_transcription.py input_audio.mp3
+```
+
+_Output: `transcription_dump.txt`_
+
+**b. Parse Dump**
+
+Search for banned words within the dump file (faster than re-transcribing).
+
+```bash
+./parse_dump.py transcription_dump.txt
+```
+
+_Output: `review.csv`_
 
 ## Optimizations
 
